@@ -1,0 +1,118 @@
+.dashboard-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .dashboard-header {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-header h1 {
+    color: #2c4875;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+  }
+  
+  .welcome-text {
+    color: #64748b;
+    font-size: 1.1rem;
+  }
+  
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .card-icon {
+    background: #e8f0fe;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-right: 1rem;
+    color: #2c4875;
+  }
+  
+  .card-title {
+    color: #1a2b4c;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .card-content {
+    color: #64748b;
+  }
+  
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2c4875;
+    margin: 0.5rem 0;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .action-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .primary-button {
+    background: #2c4875;
+    color: white;
+  }
+  
+  .primary-button:hover {
+    background: #1a2b4c;
+  }
+  
+  .secondary-button {
+    background: #e8f0fe;
+    color: #2c4875;
+  }
+  
+  .secondary-button:hover {
+    background: #d1e0fb;
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 1rem;
+    }
+  
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
