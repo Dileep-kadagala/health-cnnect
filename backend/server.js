@@ -6,17 +6,60 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const Doctor = require('./models/Doctor');
+
 const Patient = require('./models/Patient');
 const patientRoutes = require('./routes/patientRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const authRoutes = require('./routes/authRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
+const uploadToDrive = require('./routes/uploadToDrive');
+
+
+
+
+const reviewSchema = new mongoose.Schema({
+  doctorName: {
+    type: String,
+    required: true,
+  },
+  doctorRegistrationNumber: {
+    type: String,
+    required: true,
+  },
+  patientName: {
+    type: String,
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  stars: {
+    type: Number,
+    required: true,
+    min: 1, // Minimum rating of 1 star
+    max: 5, // Maximum rating of 5 stars
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Review = mongoose.model('Review', reviewSchema);
+
+module.exports = Review;
+
 
 const app = express();
 
+
+
+
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  // origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: '*',  // Allow all origins during testing
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -37,6 +80,26 @@ app.use('/api/patient', patientRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/upload', uploadToDrive);
+
+// Add direct endpoint for files
+app.get('/api/files/:aadhaarNumber', async (req, res) => {
+  try {
+    const { aadhaarNumber } = req.params;
+    console.log('Retrieving files for Aadhaar:', aadhaarNumber);
+    
+    // Ensure the FileModel is available
+    const FileModel = mongoose.model('File');
+    
+    const files = await FileModel.find({ aadhaarNumber });
+    console.log('Files found:', files.length);
+    
+    res.status(200).json(files);
+  } catch (error) {
+    console.error('Error retrieving files:', error);
+    res.status(500).json({ message: 'Error retrieving files', error: error.message });
+  }
+});
 
 // Doctor details endpoint
 app.get('/api/doctors', async (req, res) => {
@@ -114,11 +177,63 @@ app.get('/api/add-sample-doctor', async (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Something went wrong!'
-  });
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
+
+// POST route to create a new review
+app.post('/reviews', async (req, res) => {
+  try {
+    console.log('Received review data:', req.body); // Debugging
+
+    const { doctorName, doctorRegistrationNumber, patientName, comment, stars } = req.body;
+
+    if (!doctorName || !doctorRegistrationNumber || !patientName || !comment || !stars) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    if (stars < 1 || stars > 5) {
+      return res.status(400).json({ message: 'Stars must be between 1 and 5.' });
+    }
+
+    const newReview = new Review({
+      doctorName,
+      doctorRegistrationNumber,
+      patientName,
+      comment,
+      stars,
+    });
+
+    await newReview.save();
+    res.status(201).json({ message: 'Review created successfully.', review: newReview });
+  } catch (error) {
+    console.error('Error creating review:', error); // Detailed error log
+    res.status(500).json({ message: 'Internal server error.', error: error.message });
+  }
+});
+
+app.get('/reviews/doctor/name/:name', async (req, res) => {
+  try {
+    const { name } = req.params;
+    console.log("Backend doctor name: ", name);
+    console.log("Database query: ", { doctorName: name }); // Log the query
+    const reviews = await Review.find({ doctorName: name });
+
+    if (!reviews || reviews.length === 0) {
+      return res.status(404).json({ message: 'No reviews found for this doctor.' });
+    }
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ message: 'Internal server error.', error: error.message });
+  }
+});
+
+
+
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
